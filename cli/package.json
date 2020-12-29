@@ -1,6 +1,6 @@
 {
   "name": "squoosh-module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A module version of squoosh CLI exporting a simple compress function",
   "public": true,
   "scripts": {
@@ -8,7 +8,7 @@
     "prepare": "npm run build"
   },
   "main": "build/compress.js",
-  "files": ["build/compress.js"],
+  "files": ["build"],
   "keywords": [],
   "author": "Google Chrome Developers <chromium-dev@google.com>",
   "license": "Apache-2.0",
