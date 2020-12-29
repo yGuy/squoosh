@@ -11,7 +11,8 @@ import kleur from 'kleur';
 
 import { codecs as supportedFormats, preprocessors } from './codecs.js';
 import WorkerPool from './worker_pool.js';
-import { autoOptimize } from './auto-optimizer.js';
+
+import {decodeBuffer, encodeBuffer} from './compress.js'
 
 function clamp(v, min, max) {
   if (v < min) return min;
@@ -28,22 +29,9 @@ function prettyPrintSize(size) {
 
 async function decodeFile(file) {
   const buffer = await fsp.readFile(file);
-  const firstChunk = buffer.slice(0, 16);
-  const firstChunkString = Array.from(firstChunk)
-    .map((v) => String.fromCodePoint(v))
-    .join('');
-  const key = Object.entries(supportedFormats).find(([name, { detectors }]) =>
-    detectors.some((detector) => detector.exec(firstChunkString)),
-  )?.[0];
-  if (!key) {
-    throw Error(`${file} has an unsupported format`);
-  }
-  const rgba = (await supportedFormats[key].dec()).decode(
-    new Uint8Array(buffer),
-  );
   return {
     file,
-    bitmap: rgba,
+    bitmap: await decodeBuffer(buffer),
     size: buffer.length,
   };
 }
@@ -69,46 +57,10 @@ async function encodeFile({
   optimizerButteraugliTarget,
   maxOptimizerRounds,
 }) {
-  let out, infoText;
-  const encoder = await supportedFormats[encName].enc();
-  if (encConfig === 'auto') {
-    const optionToOptimize = supportedFormats[encName].autoOptimize.option;
-    const decoder = await supportedFormats[encName].dec();
-    const encode = (bitmapIn, quality) =>
-      encoder.encode(
-        bitmapIn.data,
-        bitmapIn.width,
-        bitmapIn.height,
-        Object.assign({}, supportedFormats[encName].defaultEncoderOptions, {
-          [optionToOptimize]: quality,
-        }),
-      );
-    const decode = (binary) => decoder.decode(binary);
-    const { bitmap, binary, quality } = await autoOptimize(
-      bitmapIn,
-      encode,
-      decode,
-      {
-        min: supportedFormats[encName].autoOptimize.min,
-        max: supportedFormats[encName].autoOptimize.max,
-        butteraugliDistanceGoal: optimizerButteraugliTarget,
-        maxRounds: maxOptimizerRounds,
-      },
-    );
-    out = binary;
-    const opts = {
-      // 5 significant digits is enough
-      [optionToOptimize]: Math.round(quality * 10000) / 10000,
-    };
-    infoText = ` using --${encName} '${JSON5.stringify(opts)}'`;
-  } else {
-    out = encoder.encode(
-      bitmapIn.data.buffer,
-      bitmapIn.width,
-      bitmapIn.height,
-      encConfig,
-    );
-  }
+  const { out, infoText } = await encodeBuffer(bitmapIn, encName, encConfig, {
+    butteraugliDistanceGoal: optimizerButteraugliTarget,
+    maxRounds: maxOptimizerRounds,
+  });
   await fsp.writeFile(outputFile, out);
   return {
     infoText,

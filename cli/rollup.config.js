@@ -8,14 +8,11 @@ import { builtinModules } from 'module';
 
 /** @type {import('rollup').RollupOptions} */
 export default {
-  input: 'src/index.js',
+  input: 'src/compress.js',
   output: {
     dir: 'build',
     format: 'cjs',
     assetFileNames: '[name]-[hash][extname]',
-    // This is needed so the resulting `index.js` can be
-    // executed by `npx`.
-    banner: '#!/usr/bin/env node',
   },
   plugins: [
     resolve(),
