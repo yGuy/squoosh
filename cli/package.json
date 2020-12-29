@@ -1,11 +1,14 @@
 {
-  "name": "@squoosh/cli",
-  "version": "0.6.0",
-  "description": "A CLI for Squoosh",
+  "name": "squoosh-module",
+  "version": "0.1.0",
+  "description": "A module version of squoosh CLI exporting a simple compress function",
   "public": true,
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "prepare": "npm run build"
   },
+  "main": "build/compress.js",
+  "files": ["build/compress.js"],
   "keywords": [],
   "author": "Google Chrome Developers <chromium-dev@google.com>",
   "license": "Apache-2.0",
