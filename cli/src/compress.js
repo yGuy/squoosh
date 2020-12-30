@@ -1,4 +1,4 @@
-import { codecs as supportedFormats } from './codecs';
+import { codecs as supportedFormats, preprocessors } from './codecs';
 import { autoOptimize } from './auto-optimizer';
 import JSON5 from 'json5';
 
@@ -16,6 +16,19 @@ export async function decodeBuffer(buffer){
   return (await supportedFormats[key].dec()).decode(
     new Uint8Array(buffer),
   );
+}
+
+async function preprocessImage(preprocessorName, options, bitmap) {
+  let preprocessor = preprocessors[preprocessorName];
+
+  const instance = await preprocessor.instantiate();
+  bitmap = await instance(
+    bitmap.data,
+    bitmap.width,
+    bitmap.height,
+    {...preprocessor.defaultOptions, ...options},
+  );
+  return bitmap;
 }
 
 export async function encodeBuffer(bitmapIn, encName, encConfig, optimizerConfig) {
@@ -61,15 +74,20 @@ export async function encodeBuffer(bitmapIn, encName, encConfig, optimizerConfig
   return { out, infoText };
 }
 
-async function compressBuffer(buffer, encName, encConfig){
-  const decodeResult = await decodeBuffer(buffer)
-  //await preprocessImage({preprocessorName, options: preprocessorOptions, file: decodeResult})
+
+export async function compress(buffer, encName, encConfig, preprocessorConfig, optimizerConfig){
+  let decodeResult = await decodeBuffer(buffer)
+  if (preprocessorConfig){
+    for (let config of preprocessorConfig){
+      decodeResult = await preprocessImage(config.name, config.options, decodeResult)
+    }
+  }
   const encoderDefaults = supportedFormats[encName].defaultEncoderOptions
-  const augDefaults = { optimizerButteraugliTarget: 1.4, maxOptimizerRounds: 6}
+  const augDefaults = {...{ optimizerButteraugliTarget: 1.4, maxOptimizerRounds: 6}, ...(optimizerConfig||{})}
   return (await encodeBuffer(decodeResult, encName, {...encoderDefaults, ...encConfig}, augDefaults)).out
 }
 
-export async function compress(buffer, encName, encOptions){
-  return await compressBuffer(buffer, encName, encOptions)
+export async function getImageSize(buffer){
+  const decodeResult = await decodeBuffer(buffer)
+  return {width: decodeResult.width, height: decodeResult.height}
 }
-

@@ -1,16 +1,18 @@
 {
   "name": "squoosh-module",
-  "version": "0.1.1",
-  "description": "A module version of squoosh CLI exporting a simple compress function",
+  "version": "0.2.0",
+  "description": "A module version of squoosh CLI exporting a simple compress and getImageSize function",
   "public": true,
   "scripts": {
     "build": "rollup -c",
     "prepare": "npm run build"
   },
   "main": "build/compress.js",
-  "files": ["build"],
+  "files": [
+    "build"
+  ],
   "keywords": [],
-  "author": "Google Chrome Developers <chromium-dev@google.com>",
+  "author": "Google Chrome Developers <chromium-dev@google.com>, Sebastian Mueller <sebastian@yworks.com>",
   "license": "Apache-2.0",
   "dependencies": {
     "web-streams-polyfill": "^3.0.0"
