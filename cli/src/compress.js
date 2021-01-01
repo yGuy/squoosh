@@ -84,7 +84,7 @@ export async function compress(buffer, encName, encConfig, preprocessorConfig, o
   }
   const encoderDefaults = supportedFormats[encName].defaultEncoderOptions
   const augDefaults = {...{ optimizerButteraugliTarget: 1.4, maxOptimizerRounds: 6}, ...(optimizerConfig||{})}
-  return (await encodeBuffer(decodeResult, encName, {...encoderDefaults, ...encConfig}, augDefaults)).out
+  return (await encodeBuffer(decodeResult, encName, typeof encConfig === 'string' ? encConfig : {...encoderDefaults, ...encConfig}, augDefaults)).out
 }
 
 export async function getImageSize(buffer){

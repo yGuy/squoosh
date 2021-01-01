@@ -1,6 +1,6 @@
 {
   "name": "squoosh-module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A module version of squoosh CLI exporting a simple compress and getImageSize function",
   "public": true,
   "scripts": {
